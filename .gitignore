@@ -2,6 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
+
+# Data files
+*.csv
+*.xls
+*.xlsx
+*.json
 
 # C extensions
 *.so
@@ -169,3 +177,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Docker
+*.env
+docker-compose.override.yml
+docker-compose.debug.yml
+Dockerfile.*
