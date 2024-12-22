@@ -27,3 +27,26 @@ def aggregate_data(df):
     
     return aggregated_data
 
+def segment_users_by_duration(df):
+    """Segment users into decile classes based on total session duration and calculate total data usage per decile."""
+    # Calculate total duration and total data for each user
+    user_data = df.groupby('IMSI').agg(
+        total_duration=('Dur. (ms)', 'sum'),
+        total_dl=('Total DL (Bytes)', 'sum'),
+        total_ul=('Total UL (Bytes)', 'sum')
+    ).reset_index()
+    user_data['total_data'] = user_data['total_dl'] + user_data['total_ul']
+    
+    # Segment users into decile classes based on total duration
+    user_data['duration_decile'] = pd.qcut(user_data['total_duration'], 10, labels=False) + 1
+    
+    # Filter to top five decile classes
+    top_five_deciles = user_data[user_data['duration_decile'] <= 5]
+    
+    # Compute total data per decile class
+    decile_data = top_five_deciles.groupby('duration_decile').agg(
+        total_data=('total_data', 'sum'),
+        num_users=('IMSI', 'nunique')
+    ).reset_index()
+    
+    return decile_data
