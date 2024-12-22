@@ -63,3 +63,67 @@ def plot_top_handsets_per_manufacturer(df):
     ax.legend(top_5_handles, top_5_labels, title='Handset Type', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small', title_fontsize='small')
     
     plt.show()
+
+
+def plot_univariate_analysis(df):
+    """Graphical Univariate Analysis for each variable in the DataFrame."""
+    
+    # List of continuous variables
+    continuous_vars = ['Dur. (ms)', 'Total DL (Bytes)', 'Total UL (Bytes)', 'Avg RTT DL (ms)', 'Avg RTT UL (ms)', 
+                       'Avg Bearer TP DL (kbps)', 'Avg Bearer TP UL (kbps)', 'TCP DL Retrans. Vol (Bytes)', 
+                       'TCP UL Retrans. Vol (Bytes)']
+    
+    # List of categorical variables
+    categorical_vars = ['Handset Manufacturer', 'Handset Type', 'Last Location Name']
+    
+    # Plotting histograms for continuous variables
+    plt.figure(figsize=(15, 10))
+    for i, var in enumerate(continuous_vars, 1):
+        plt.subplot(3, 3, i)
+        sns.histplot(df[var], kde=True)
+        plt.title(f'Histogram for {var}')
+        plt.xlabel(var)
+        plt.ylabel('Frequency')
+    plt.tight_layout()
+    plt.show()
+    
+    # Plotting box plots for continuous variables
+    plt.figure(figsize=(15, 10))
+    for i, var in enumerate(continuous_vars, 1):
+        plt.subplot(3, 3, i)
+        sns.boxplot(y=df[var], orient='v')
+        plt.title(f'Box Plot for {var}')
+        plt.xlabel(var)
+    plt.tight_layout()
+    plt.show()
+    
+
+    # Plotting bar plots for categorical variables
+    fig, axes = plt.subplots(len(categorical_vars), 1, figsize=(15, 10), sharex=False)
+    for i, var in enumerate(categorical_vars):
+        sns.countplot(y=df[var], order=df[var].value_counts().index, palette='viridis', hue=df[var],ax=axes[i])
+        axes[i].set_title(f'Bar Plot for {var}')
+        axes[i].set_xlabel('Frequency')
+        axes[i].set_ylabel(var)
+        axes[i].margins(y=0.1)  # Add space between bars
+    plt.tight_layout()
+    plt.show()
+
+def plot_bivariate_analysis(df):
+    """Graphical: Scatter Plot for Bivariate Application vs Total Data (DL + UL)"""
+    # Calculate total data volume
+    df['total_data_volume'] = df['Total DL (Bytes)'] + df['Total UL (Bytes)']
+    
+    # List of applications to analyze
+    applications = ['Social Media DL (Bytes)', 'Google DL (Bytes)', 'Email DL (Bytes)',
+                    'Youtube DL (Bytes)', 'Netflix DL (Bytes)', 'Gaming DL (Bytes)', 'Other DL (Bytes)']
+    
+    # Create scatter plots for each application
+    for app in applications:
+        plt.figure(figsize=(10, 6))
+        sns.scatterplot(x=df[app], y=df['total_data_volume'], hue=df[app], palette='viridis')
+        plt.title(f'Bivariate: {app} vs Total Data Volume')
+        plt.xlabel(f'{app}')
+        plt.ylabel('Total Data Volume (Bytes)')
+        plt.legend(title=app, bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.show()
