@@ -50,3 +50,20 @@ def segment_users_by_duration(df):
     ).reset_index()
     
     return decile_data
+
+def describe_variables(df):
+    """Describe all relevant variables and their associated data types."""
+    description = df.info()
+    return description
+
+def calculate_basic_metrics(df):
+    """Calculate basic metrics such as mean, median, etc. and return in a table format."""
+    basic_metrics = df.describe().T[['mean', '50%', 'std', 'min', 'max']]
+    basic_metrics.rename(columns={'50%': 'median'}, inplace=True)
+    return basic_metrics
+
+def calculate_dispersion_parameters(df):
+    # Calculate dispersion parameters for each quantitative variable.
+    dispersion_metrics = df.describe().T[['std', 'min', '25%', '50%', '75%', 'max']]
+    dispersion_metrics.rename(columns={'50%': 'median', 'std': 'std_dev'}, inplace=True)
+    return dispersion_metrics
