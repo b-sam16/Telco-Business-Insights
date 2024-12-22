@@ -127,3 +127,44 @@ def plot_bivariate_analysis(df):
         plt.ylabel('Total Data Volume (Bytes)')
         plt.legend(title=app, bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.show()
+        
+
+# Correlation Analysis
+def plot_correlation_matrix(df):
+    """Graphical: Heatmap for Correlation Analysis."""
+    # Calculate the correlation matrix for the specified columns
+    correlation_matrix = df[['Social Media DL (Bytes)', 'Google DL (Bytes)', 'Email DL (Bytes)',
+                             'Youtube DL (Bytes)', 'Netflix DL (Bytes)', 'Gaming DL (Bytes)', 'Other DL (Bytes)']].corr()
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=0.5)
+    plt.title('Correlation Matrix')
+    plt.show()
+
+
+
+def perform_pca(df):
+    """Perform PCA on the dataset and plot the explained variance ratio."""
+    # Select numeric columns for PCA
+    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+    
+    # Standardize the data
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(df[numeric_cols])
+    
+    # Apply PCA
+    pca = PCA()
+    pca.fit(scaled_data)
+    
+    # Explained variance ratio
+    explained_variance_ratio = pca.explained_variance_ratio_
+    
+    # Plot the explained variance ratio
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, len(explained_variance_ratio) + 1), explained_variance_ratio, marker='o', linestyle='--')
+    plt.title('PCA Scree Plot')
+    plt.xlabel('Principal Component')
+    plt.ylabel('Variance Explained')
+    plt.show()
+    
+    return pca, explained_variance_ratio
+
