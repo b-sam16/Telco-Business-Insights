@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -64,32 +65,32 @@ def plot_top_handsets_per_manufacturer(df):
     
     plt.show()
 
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-import math
-
 def plot_univariate_analysis(df):
     """Graphical Univariate Analysis for each variable in the DataFrame."""
-    
-    # Plotting histogram for the continuous variable
-    plt.figure(figsize=(10, 6))
-    sns.histplot(df['Dur. (ms)'], kde=True)
-    plt.title('Histogram for Total Duration of the xDR (in ms)')
-    plt.xlabel('Total Duration of the xDR (in ms)')
-    plt.ylabel('Frequency')
-    plt.tight_layout()
-    plt.show()
-    
-    # Plot Categorical Variable
-   
-    plt.figure(figsize=(10, 6))
-    sns.countplot(y=df['Handset Manufacturer'], order=df['Handset Manufacturer'].value_counts().index)
-    plt.title('Bar Plot of Handset Manufacturer')
-    plt.xlabel('Frequency')
-    plt.ylabel('Handset Manufacturer')
-    plt.margins(x=0.1)
-    plt.show()
+
+    # Separate columns by type
+    # Separate columns by type
+    continuous_vars = df.select_dtypes(include=['float64']).columns
+    integer_vars = df.select_dtypes(include=['int64']).columns
+
+    # Plot Histograms for Continuous Variables (float64) without KDE for speed
+    for var in continuous_vars:
+        plt.figure(figsize=(10, 6))  # Create a new figure for each variable
+        sns.histplot(df[var], kde=False)  # Remove kde for faster rendering
+        plt.title(f'Histogram for {var}')
+        plt.xlabel(var)
+        plt.ylabel('Frequency')
+        plt.show()
+
+    # Plot Histograms or Box Plots for Integer Variables (int64) without KDE
+    for var in integer_vars:
+        plt.figure(figsize=(10, 6))  # Create a new figure for each variable
+        sns.histplot(df[var], kde=False)  # Remove kde for faster rendering
+        plt.title(f'Histogram for {var}')
+        plt.xlabel(var)
+        plt.ylabel('Frequency')
+        plt.show()
+
 
 def plot_bivariate_analysis(df):
     """Graphical: Scatter Plot for Bivariate Application vs Total Data (DL + UL)"""
@@ -123,12 +124,8 @@ def plot_bivariate_analysis(df):
 def plot_correlation_matrix(df):
     """Graphical: Heatmap for Correlation Analysis."""
     # List of applications
-    applications = ['Social Media', 'Google', 'Email', 'Youtube', 'Netflix', 'Gaming', 'Other']
-    
-    # Combine upload and download data for each application
-    for app in applications:
-        df[f'{app} Total'] = df[f'{app} DL (Bytes)'] + df[f'{app} UL (Bytes)']
-    correlation_columns = [f'{app} Total' for app in applications]
+    correlation_columns = ['Social Media_Total_Data', 'Google_Total_Data', 'Email_Total_Data', 'Youtube_Total_Data', 'Netflix_Total_Data', 'Gaming_Total_Data', 'Other_Total_Data']
+
     # Calculate the correlation matrix
     correlation_matrix = df[correlation_columns].corr()
     plt.figure(figsize=(10, 8))

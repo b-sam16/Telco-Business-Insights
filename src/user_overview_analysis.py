@@ -2,6 +2,14 @@ import pandas as pd
 
 def aggregate_data(df):
     """Aggregate user data to calculate the number of xDR sessions, session duration, total data usage, and total data volume per application."""
+
+    # List of applications to analyze
+    applications = ['Social Media', 'Google', 'Email', 'Youtube', 'Netflix', 'Gaming', 'Other']
+    
+    # Calculate Total Data Volume per Application
+    for app in applications:
+        df[f'{app} Total'] = df[f'{app} DL (Bytes)'] + df[f'{app} UL (Bytes)']
+        
     # Aggregate basic metrics
     aggregated_data = df.groupby('IMSI').agg(
         num_sessions=('Bearer Id', 'count'),
@@ -10,7 +18,10 @@ def aggregate_data(df):
         total_ul=('Total UL (Bytes)', 'sum')
     ).reset_index()
     aggregated_data['total_data'] = aggregated_data['total_dl'] + aggregated_data['total_ul']
-    
+
+    # Aggregate total data volume per application
+    for app in applications:
+        aggregated_data[f'{app}_Total_Data'] = df.groupby('IMSI')[f'{app} Total'].sum().values
     return aggregated_data
 
 def segment_users_by_duration(df):
