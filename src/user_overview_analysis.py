@@ -19,9 +19,15 @@ def aggregate_data(df):
     ).reset_index()
     aggregated_data['total_data'] = aggregated_data['total_dl'] + aggregated_data['total_ul']
 
+    # Drop the 'total_dl' and 'total_ul' columns from the final output
+    aggregated_data = aggregated_data.drop(columns=['total_dl', 'total_ul'])
+
     # Aggregate total data volume per application
-    for app in applications:
-        aggregated_data[f'{app}_Total_Data'] = df.groupby('IMSI')[f'{app} Total'].sum().values
+    app_agg = df.groupby('IMSI')[[f'{app} Total' for app in applications]].sum().reset_index()
+    
+    # Merge application-specific aggregates into the main aggregated data
+    aggregated_data = pd.merge(aggregated_data, app_agg, on='IMSI', how='left')
+    
     return aggregated_data
 
 def segment_users_by_duration(df):

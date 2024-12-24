@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
-import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -67,49 +65,30 @@ def plot_top_handsets_per_manufacturer(df):
 
 def plot_univariate_analysis(df):
     """Graphical Univariate Analysis for each variable in the DataFrame."""
-
-    # Separate columns by type
-    # Separate columns by type
-    continuous_vars = df.select_dtypes(include=['float64']).columns
-    integer_vars = df.select_dtypes(include=['int64']).columns
-
     # Plot Histograms for Continuous Variables (float64) without KDE for speed
-    for var in continuous_vars:
-        plt.figure(figsize=(10, 6))  # Create a new figure for each variable
-        sns.histplot(df[var], kde=False)  # Remove kde for faster rendering
-        plt.title(f'Histogram for {var}')
-        plt.xlabel(var)
-        plt.ylabel('Frequency')
+    for var in df.columns:
+        plt.figure(figsize=(6, 4))  # Create a new figure for each variable
+        sns.histplot(df[var], kde=True)  
+        plt.title(f'Histogram for {var}', fontsize=12,)
+        plt.xlabel(var, fontsize=10)
+        plt.ylabel('Frequency',fontsize=10)
+    
         plt.show()
 
-    # Plot Histograms or Box Plots for Integer Variables (int64) without KDE
-    for var in integer_vars:
-        plt.figure(figsize=(10, 6))  # Create a new figure for each variable
-        sns.histplot(df[var], kde=False)  # Remove kde for faster rendering
-        plt.title(f'Histogram for {var}')
-        plt.xlabel(var)
-        plt.ylabel('Frequency')
-        plt.show()
 
 
 def plot_bivariate_analysis(df):
     """Graphical: Scatter Plot for Bivariate Application vs Total Data (DL + UL)"""
-    # Calculate total data volume
-    df['total_data_volume'] = df['Total DL (Bytes)'] + df['Total UL (Bytes)']
     
     # List of applications to analyze
     applications = ['Social Media', 'Google', 'Email', 'Youtube', 'Netflix', 'Gaming', 'Other']
-    
-    # Combine upload and download data for each application
-    for app in applications:
-        df[f'{app} Total'] = df[f'{app} DL (Bytes)'] + df[f'{app} UL (Bytes)']
     
     # Create scatter plots for each combined application data
     for app in applications:
         plt.figure(figsize=(10, 6))
         sns.scatterplot(
             x=df[f'{app} Total'], 
-            y=df['total_data_volume'], 
+            y=df['total_data'], 
             hue=df[f'{app} Total'], 
             palette='viridis'
         )
@@ -124,8 +103,8 @@ def plot_bivariate_analysis(df):
 def plot_correlation_matrix(df):
     """Graphical: Heatmap for Correlation Analysis."""
     # List of applications
-    correlation_columns = ['Social Media_Total_Data', 'Google_Total_Data', 'Email_Total_Data', 'Youtube_Total_Data', 'Netflix_Total_Data', 'Gaming_Total_Data', 'Other_Total_Data']
-
+    correlation_columns = ['Social Media Total', 'Google Total', 'Email Total', 'Youtube Total', 'Netflix Total', 'Gaming Total', 'Other Total']
+    
     # Calculate the correlation matrix
     correlation_matrix = df[correlation_columns].corr()
     plt.figure(figsize=(10, 8))
