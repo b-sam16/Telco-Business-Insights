@@ -139,3 +139,21 @@ def perform_pca(df):
     plt.show()
     
     return pca, explained_variance_ratio
+
+
+def visualize_cluster_metrics(cluster_summary):
+    #Visualize cluster-level engagement metrics.
+   
+    metrics = ['sessions_frequency', 'session_duration', 'total_traffic']
+    
+    for metric in metrics:
+        plt.figure(figsize=(12, 6))
+        sns.barplot(
+            data=cluster_summary,
+            x='engagement_cluster',
+            y=f'avg_{metric}'
+        )
+        plt.title(f'Average {metric.replace("_", " ").title()} per Cluster')
+        plt.xlabel('Engagement Cluster')
+        plt.ylabel(f'Average {metric.replace("_", " ").title()}')
+        plt.show()

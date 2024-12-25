@@ -35,62 +35,58 @@ def report_top_customers(df):
     
     return top_customers
 
-def cluster_engagement_metrics(engagement_data, k=3):
+
+def normalize_engagement_metrics(engagement_data):
+  
+    #Normalize engagement metrics for clustering analysis.
+    
+    # Copy the original data to avoid modifying it directly
+    normalized_data = engagement_data.copy()
+    
+    # Define the metrics to normalize
+    metrics = ['sessions_frequency', 'session_duration', 'total_traffic']
+    
+    # Initialize the StandardScaler
+    scaler = StandardScaler()
+    
+    # Apply normalization to the metrics
+    normalized_data[metrics] = scaler.fit_transform(normalized_data[metrics])
+    
+    return normalized_data
+
+
+def kmeans_clustering_engagement(normalized_data, k=3):
+    #Perform K-Means clustering on normalized engagement metrics.
+    # Copy the data to avoid modifying the original DataFrame
+    clustered_data = normalized_data.copy()
+    
+    # Select the engagement metrics for clustering
+    metrics = ['sessions_frequency', 'session_duration', 'total_traffic']
+    
+    # Initialize and fit the K-Means model
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    clustered_data['engagement_cluster'] = kmeans.fit_predict(clustered_data[metrics])
+    
+    return clustered_data, kmeans
+
+def compute_cluster_metrics(clustered_data, original_data):
     """
-    Normalize engagement metrics and classify customers into k groups using K-Means clustering.
+    Compute minimum, maximum, average, and total metrics for each cluster.
     
     Parameters:
-        engagement_data (pd.DataFrame): Aggregated user data.
-        k (int): Number of clusters (default is 3).
+        clustered_data (pd.DataFrame): Data with cluster labels.
+        original_data (pd.DataFrame): Original (non-normalized) engagement data.
     
     Returns:
-        pd.DataFrame: Engagement data with added 'cluster' and 'cluster_label' columns.
+        pd.DataFrame: Cluster-level summary statistics.
     """
-    # Select relevant engagement metrics
-    metrics = ['sessions_frequency', 'session_duration', 'total_traffic']
-    engagement_df = engagement_data[['MSISDN/Number'] + metrics].copy()
-    
-    # Normalize the metrics
-    scaler = StandardScaler()
-    engagement_df[metrics] = scaler.fit_transform(engagement_df[metrics])
-    
-    # Apply K-Means clustering
-    kmeans = KMeans(n_clusters=k, random_state=42)
-    engagement_df['cluster'] = kmeans.fit_predict(engagement_df[metrics])
-    
-    # Map clusters for clarity (e.g., Low, Medium, High Engagement)
-    cluster_mapping = {
-        0: 'Low Engagement',
-        1: 'Medium Engagement',
-        2: 'High Engagement'
-    }
-    engagement_df['cluster_label'] = engagement_df['cluster'].map(cluster_mapping)
-    
-    # Merge cluster results back to the original engagement_data
-    clustered_data = pd.merge(
-        engagement_data,
-        engagement_df[['MSISDN/Number', 'cluster', 'cluster_label']],
-        on='MSISDN/Number',
-        how='left'
+    # Merge cluster labels with original non-normalized data
+    clustered_original_data = pd.concat(
+        [original_data, clustered_data['engagement_cluster']], axis=1
     )
     
-    return clustered_data
-
-def cluster_metrics_summary(clustered_data):
-    """
-    Compute minimum, maximum, average, and total of non-normalized metrics for each cluster.
-    
-    Parameters:
-        clustered_data (pd.DataFrame): Data with clustering results and engagement metrics.
-        
-    Returns:
-        pd.DataFrame: Summary statistics per cluster.
-    """
-    # Define the metrics to analyze
-    metrics = ['sessions_frequency', 'session_duration', 'total_traffic']
-    
-    # Group data by cluster_label and calculate summary statistics
-    cluster_summary = clustered_data.groupby('cluster_label').agg(
+    # Calculate metrics per cluster
+    cluster_summary = clustered_original_data.groupby('engagement_cluster').agg(
         min_sessions_frequency=('sessions_frequency', 'min'),
         max_sessions_frequency=('sessions_frequency', 'max'),
         avg_sessions_frequency=('sessions_frequency', 'mean'),
@@ -108,3 +104,25 @@ def cluster_metrics_summary(clustered_data):
     ).reset_index()
     
     return cluster_summary
+
+import pandas as pd
+
+def top_users_per_application(df):
+   
+    # Aggregate user total traffic per application and derive the top 10 most engaged users per application.
+    # List of applications to analyze
+    applications = ['Social Media', 'Google', 'Email', 'Youtube', 'Netflix', 'Gaming', 'Other']
+    
+    top_users = {}
+    
+    for app in applications:
+        # Calculate total traffic per user for each application
+        df[f'{app}_Total'] = df[f'{app} DL (Bytes)'] + df[f'{app} UL (Bytes)']
+        
+        # Aggregate traffic per user for the current application
+        app_traffic = df.groupby('MSISDN/Number')[[f'{app}_Total']].sum().reset_index()
+        
+        # Sort and select the top 10 users based on total traffic for the application
+        top_users[app] = app_traffic.sort_values(by=f'{app}_Total', ascending=False).head(10)
+    
+    return top_users
