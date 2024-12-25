@@ -157,3 +157,31 @@ def visualize_cluster_metrics(cluster_summary):
         plt.xlabel('Engagement Cluster')
         plt.ylabel(f'Average {metric.replace("_", " ").title()}')
         plt.show()
+
+def plot_top_3_applications(df):
+    # List of applications to analyze
+    applications = ['Social Media', 'Google', 'Email', 'Youtube', 'Netflix', 'Gaming', 'Other']
+    
+    # Calculate total traffic per application
+    total_traffic_per_app = {}
+    
+    for app in applications:
+        df[f'{app}_Total'] = df[f'{app} DL (Bytes)'] + df[f'{app} UL (Bytes)']
+        total_traffic_per_app[app] = df[f'{app}_Total'].sum()
+    
+    # Sort the applications by total traffic and select the top 3
+    top_3_apps = sorted(total_traffic_per_app.items(), key=lambda x: x[1], reverse=True)[:3]
+    
+    # Extract the app names and their total traffic for plotting
+    top_3_apps_names = [x[0] for x in top_3_apps]
+    top_3_apps_traffic = [x[1] for x in top_3_apps]
+    
+    # Plot the top 3 most used applications
+    plt.figure(figsize=(10, 6))
+    plt.bar(top_3_apps_names, top_3_apps_traffic, color=['blue', 'green', 'red'])
+    plt.title('Top 3 Most Used Applications Based on Total Traffic')
+    plt.xlabel('Applications')
+    plt.ylabel('Total Traffic (Bytes)')
+    plt.xticks(rotation=45)
+    plt.show()
+
